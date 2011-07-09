@@ -1,0 +1,210 @@
+<html>
+<head>
+<title>Space Madness - Alpha 1.20</title>
+<link type="text/css" href="css/space-madness.css" rel="stylesheet" />
+<link type="text/css" href="css/ui-darkness/jquery-ui-1.8.13.custom.css" rel="stylesheet" />
+<script type="application/javascript" src="js/jquery-1.5.1.min.js"></script>
+<script type="application/javascript" src="js/jquery-ui-1.8.13.custom.min.js"></script>
+<script type="application/javascript" src="js/jquery.spritely-0.5.js"></script>
+<script type="application/javascript" src="js/game.js"></script>
+<script type="application/javascript" src="js/ship.js"></script>
+<script type="application/javascript" src="js/rock.js"></script>
+<script type="application/javascript">
+var gameInstance=new game();
+var gameRunning = false;
+var gamePaused = false;
+var points = 0;
+imageBuffer = new Array();
+context = { width: 708, height: 570};
+var percentage = 5;
+soundBuffer = new Array();
+
+/*
+ * For preloading images on cache
+ */
+function preloader(){
+	
+	$( "#progress-bar" ).progressbar({value: percentage});
+
+	// set image list
+	var images = new Array();
+	images['ship']="images/spaceship.png";
+	images['fireball']="images/fireball.png";
+	images['rock']="images/rock.png";
+	images['rock-explosion']="images/rock-explosion.png";
+	
+	//var sounds={ 'backMusic': "sounds/cowboys-from-hell.mp3",};
+	//sounds.backMusic
+	
+	var sounds = Array();
+	sounds['backMusic']="sounds/cowboys-from-hell.mp3";
+	sounds['weapon-fire']="sounds/lazer.wav";
+	sounds['rock-explosion']="sounds/bigboom.wav";
+	sounds['ship-explosion']="sounds/ship-explode.wav";
+	for (var key in sounds){
+		var soundObj = new Audio();
+		soundObj.src = sounds[key];
+		soundBuffer[key] = soundObj;
+	}
+	
+	
+	var imageslength = 4;
+	var count = 1;
+	// start preloading
+	for (var key in images){
+		var imgObj = new Image();
+		imgObj.src = images[key];
+		imageBuffer[key] = imgObj;
+		var	imageBufferLength = imageBuffer.length;
+		percentage = ( ( count * 100 ) /  imageslength);
+		$( '#progress-bar' ).progressbar({value: percentage});
+		count++;
+	}
+	
+	$( "#loading-layer" ).hide();
+	
+} 
+
+
+$(document).ready(function() {
+    $("button").button();
+  });
+
+function addPoints(){
+	points += 10;
+	updatePointsBoard(points);
+}
+  
+function updatePointsBoard(points){
+	$("#points").text(points);
+	$("#points").effect("bounce", { times:2 }, 100);
+}
+
+$(document).keydown(function(e){
+	if(gameRunning){
+		gameInstance.notify(e);
+	}
+});
+
+function startGame(){
+	if(!gameRunning){
+		$('#space').pan({fps: 30, speed: 3, dir: 'down', depth: 10});
+		gameRunning = true;
+		gameInstance.init();
+		
+	}else{
+		$('#space').spStart();
+		gameInstance.startLoop();
+	}
+	//soundBuffer['backMusic'].play();
+}
+
+function pauseGame(){
+	//soundBuffer['backMusic'].pause();
+	$('#space').spStop();
+	gameInstance.stop();
+}
+
+function gameOver(){
+	$("#pointsToUser").html(points);
+	
+	$( "#game-over" ).dialog({
+					modal: true ,
+					title: 'Game over',
+					buttons: { "Ok": function() { rankUser(); }}
+	});
+	
+	//soundBuffer['backMusic'].stop();
+}
+
+function rankUser(){
+	
+	$( "#game-over" ).dialog('close');
+	
+	var userMsg;
+	
+	$.ajax({
+		url: "rankingDao.php?username=" + $("#username").val() + "&points=" + points,
+		type: "GET",
+		success: function(msg){
+			
+			if( !isNaN(parseFloat(msg)) ){
+				if( msg == 1){
+					userMsg = "Congrats! You are a beast! You are a top of the ranking.";
+				}else{
+					userMsg = "Your game was ranked in "+ msg +" position!";
+				}
+			}else{
+				userMsg = "Sory, your game wasn´t good enough for been ranked.";
+			}
+
+		},
+		error: function(a,b,c){
+			userMsg = "Unexpected error.";
+		},
+		complete: function(){
+			$("#showRanking").append(userMsg);
+			$( "#showRanking" ).dialog({
+					modal: true ,
+					title: 'Ranked',
+					buttons: { "Ok": function() { $('#restartBtn').click(); }}
+			});
+		}
+	 });
+	 
+}
+
+
+</script>
+
+</head>
+<body style="background-color: BLACK; text-align:center;font-family:arial;" onload="preloader()">
+	<div style="width: 1015px; height: 570;margin-left: auto; margin-right: auto;">
+		
+		<!-- left side panel -->
+		<div class="panel-left">
+			<button onclick="window.location = '../../index.html'" style="width: 100%;">Home</button>
+			<button onclick="window.location = 'ranking.php'" style="width: 100%;">Ranking</button>
+			<br/>
+			<div class="commands">
+				<div style="font-weight: bold;">Key Commands</div>
+				<div><a style="float: left;">Movements</a><a style="float: right;">arrows</a></div>
+				<div><a style="float: left;">Weapon fire</a><a style="float: right;">F</a></div>
+			</div>
+		</div>
+		
+		<!-- center side panel -->
+		<div style="float: left; margin-left: auto; margin-right: auto; width: 708px; height: 570; position: relative; left: 0;">
+			<div class="header-layer">Space Madness</div>
+			<div id="space" class="stage"></div>
+			<canvas id="canvas-layer" width="708" height="570px" >Your browser does not support html5.</canvas>
+			<div id="loading-layer">
+				<span style="position: absolute; top: 250px; color: white; width: 708; left: 0;">Loading...</span>
+				<div id="progress-bar" style="left: 100; top: 300; position: absolute; width: 70%; z-index: 8;"></div>
+			</div>
+		</div>
+		
+		<!-- right side panel -->
+		<div id="right-side-panel" style="float: left; width: 150px; height: 570;">
+			<button onclick="startGame();return false;" style="width: 100%;">Start</button>
+			<button onclick="pauseGame();return false;" style="width: 100%;">Pause</button>
+			<button id="restartBtn" onclick="window.location = 'index.html'" style="width: 100%;">Refresh</button>
+			<a style="color: WHITE; float: left;font-size:25px;font-family:arial; margin-top: 5px; margin-left: 5px;">Points&nbsp;&nbsp;</a>
+			<a id="points" style="color: WHITE; float: left; font-size:30px;font-family:arial;margin-top: 2px;">0</a>
+		</div>
+		
+	</div>
+	<br/>
+	
+	<div id="game-over" style="display:none;">
+		You've been killed by an asteroid!
+		<div id="pointsToUser">Your score:</div>
+		<div>
+			<label>Enter your name:</label>
+			<input id="username" type="text" maxlength="10" size="15" value=""/>
+		</div>
+	</div>
+	<div id="showRanking" style="display:none;"></div>
+	<div style="width: 100%;color: white;">By Juan Manuel Agüero - 2011</div>
+</body>
+</html>
