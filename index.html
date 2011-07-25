@@ -33,7 +33,7 @@ function preloader(){
 	images['rock']="images/rock.png";
 	images['rock-explosion']="images/rock-explosion.png";
 	
-	//var sounds={ 'backMusic': "sounds/cowboys-from-hell.mp3",};
+	var sounds={ 'backMusic': "sounds/cowboys-from-hell.mp3",};
 	//sounds.backMusic
 	
 	var sounds = Array();
@@ -96,11 +96,11 @@ function startGame(){
 		$('#space').spStart();
 		gameInstance.startLoop();
 	}
-	//soundBuffer['backMusic'].play();
+	soundBuffer['backMusic'].play();
 }
 
 function pauseGame(){
-	//soundBuffer['backMusic'].pause();
+	soundBuffer['backMusic'].pause();
 	$('#space').spStop();
 	gameInstance.stop();
 }
@@ -114,7 +114,7 @@ function gameOver(){
 					buttons: { "Ok": function() { rankUser(); }}
 	});
 	
-	//soundBuffer['backMusic'].stop();
+	soundBuffer['backMusic'].stop();
 }
 
 function rankUser(){
@@ -130,7 +130,7 @@ function rankUser(){
 			
 			if( !isNaN(parseFloat(msg)) ){
 				if( msg == 1){
-					userMsg = "Congrats! You are a beast! You are a top of the ranking.";
+					userMsg = "Congrats! You are a beast! You are at the top of the ranking.";
 				}else{
 					userMsg = "Your game was ranked in "+ msg +" position!";
 				}

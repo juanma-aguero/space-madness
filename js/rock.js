@@ -1,7 +1,7 @@
 /** Rect*/
 function rock(){
 	this.vel = ( 2 + (Math.random()*(5-2)) );
-	this.posX= ( 0 + (Math.random()*(700-20)) );
+	this.posX= ( (-20) + (Math.random()*(700-(-20))) );
 	this.spriteX = 0;
 	this.spriteY = 0;
 	this.posY=0;
@@ -23,7 +23,7 @@ rock.prototype.update=function(ship){
 	if( ((ship.posX >= this.posX && ship.posX <= (this.posX+this.width)) || 
 		(ship.posX+ship.width >= this.posX  && ship.posX.width <= (this.posX+this.width)))&&
 		ship.posY >= this.posY && ship.posY <= this.posY+this.height && ship.state == 0 ){
-		//soundBuffer['ship-explosion'].play();
+		soundBuffer['ship-explosion'].play();
 		ship.state = 2;
 	}
 	
@@ -40,8 +40,8 @@ rock.prototype.update=function(ship){
 				this.state = 1;
 				this.clock = 0;
 				this.img = 'rock-explosion';
-				//var explosion = new Audio("./sounds/bigboom.wav");
-				//explosion.play();
+				var explosion = new Audio("./sounds/bigboom.wav");
+				explosion.play();
 				addPoints();
 			}
 			

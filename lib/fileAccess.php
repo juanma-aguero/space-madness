@@ -2,7 +2,7 @@
 
 class DataBase {
 	
-	private static $file = "lib/rankingPija.txt";
+	private static $file = "lib/rankingFile.txt";
 	private static $delimiter = "|";
 	
 	/*
@@ -12,18 +12,19 @@ class DataBase {
 		
 		$ranking = self::getRanking();
 		$id = ( count($ranking) +1);
-		
+
 		// add user to ranking
 		$ranking[] = array('id' => $id, 'username' => $user, 'points' => $points);
 		
+
 		// sort ranking
 		$sortedRanking = self::sortRanking( $ranking );
-		
+
 		$fh = fopen(self::$file, 'w') or die("can't open file");
-		$position = 1;
+		$position = 0;
 		foreach($sortedRanking as $row){
 			if( $row['id'] == $id ){
-				$userRanking = $position;
+				$userRanking = ($position+1);
 			}
 			$stringData = $row['id'].",".$row['username'].",".$row['points'].self::$delimiter;
 			fwrite($fh, $stringData);
@@ -31,7 +32,7 @@ class DataBase {
 		}
 		
 		fclose($fh);
-		return ($position-1);
+		return ($userRanking);
 	}
 	
 	/*
@@ -77,7 +78,7 @@ class DataBase {
 			$username[$key]  = $row['username'];
 			$points[$key] = $row['points'];
 		}
-		array_multisort($points, SORT_DESC);
+		arsort($points);
 		foreach( $points as $key => $value){
 			$sortedRanking[] = array('id' => $ids[$key], 'username' => $username[$key], 'points' => $value);
 		}
